@@ -1,6 +1,12 @@
 package routes
 
-import "github.com/gofiber/fiber/v2"
+import (
+	"server/models"
+	service "server/services"
+
+	"github.com/gofiber/fiber/v2"
+)
+
 
 
 type RegisterBody struct {
@@ -12,9 +18,31 @@ type RegisterBody struct {
 
 // /register
 func Register(c *fiber.Ctx) error {
-	newUser := new(RegisterBody)
-	if err := c.BodyParser(newUser); err != nil {
+	requestBody := new(RegisterBody)
+	if err := c.BodyParser(requestBody); err != nil {
 		return c.Status(400).SendString("Invalid body")
 	}
-	return c.Status(200).SendString("OK")
+	
+	newUser := new(models.User)
+	newUser.Name = requestBody.Name
+	newUser.Email = requestBody.Email
+	newUser.Password = requestBody.Password
+	
+	userWithEmailExists, err := service.UserWithEmailExists(newUser.Email)
+
+	if err != nil {
+		return c.Status(500).SendString("Internal server error")
+	}
+
+	if userWithEmailExists {
+		return c.Status(500).SendString("User with email already exists")
+	}
+
+	user, err := service.CreateUser(*newUser)
+
+	if err != nil {
+		return c.Status(500).SendString("Could not create user")
+	}
+
+	return c.Status(200).JSON(user)
 }

@@ -12,7 +12,7 @@ func main() {
 
 	app := fiber.New()
 	// Define routes
-	app.Get("/register", routes.Register)
+	app.Post("/register", routes.Register)
 	
 	app.Listen(":5000")
 }

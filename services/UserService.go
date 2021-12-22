@@ -13,9 +13,23 @@ func CreateUser(user models.User) (models.User, error) {
 		return models.User{}, err
 	}
 
-	if result := database.Client.Create(user); result.Error != nil {
+	if result := database.Client.Create(&user).First(&user); result.Error != nil {
 		return models.User{}, result.Error
 	}
 
 	return user, nil
+}
+
+func UserWithEmailExists(email string) (bool, error) {
+	var user []models.User
+
+	if result := database.Client.Where("email = ?", email).Find(&user); result.Error != nil {
+		return false, result.Error
+	}
+
+	if len(user) > 0 {
+		return true, nil
+	}
+
+	return false, nil
 }
