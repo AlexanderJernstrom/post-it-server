@@ -1,6 +1,10 @@
 package models
 
-import "golang.org/x/crypto/bcrypt"
+import (
+	"github.com/dgrijalva/jwt-go"
+	"golang.org/x/crypto/bcrypt"
+)
+
 
 type User struct {
 	ID       uint   `gorm:"primary_key" json:"id"`
@@ -20,4 +24,18 @@ func (user *User) HashPassword() error {
 	user.Password = string(hashedBytes)
 
 	return nil
+}
+
+func (user *User) CreateToken() (token string, err error) {
+	tokenClaims := jwt.MapClaims{}
+	tokenClaims["authorized"] = true
+	tokenClaims["user_id"] = user.ID
+
+	at := jwt.NewWithClaims(jwt.SigningMethodHS256, tokenClaims)
+	token, err = at.SignedString([]byte("SECRET"))
+	if err != nil {
+		return "", err
+	}
+	
+	return token, nil
 }

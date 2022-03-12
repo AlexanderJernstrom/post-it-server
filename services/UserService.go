@@ -33,3 +33,16 @@ func UserWithEmailExists(email string) (bool, error) {
 
 	return false, nil
 }
+
+
+func GetUserByEmail(email string) (models.User, error) {
+	var user models.User
+
+	if db := database.Client.Where("email = ?", email).First(&user); db.Error != nil {
+		return models.User{}, db.Error
+	}
+
+	return user, nil
+
+
+}
